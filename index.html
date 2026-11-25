@@ -28,7 +28,7 @@
     --bg:#090f0d;
     --ink:#f2f6f4; --ink2:#c6d1cc; --ink3:#9daaa4;
     --line:rgba(255,255,255,.15); --line2:rgba(255,255,255,.34);
-    --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#27332e;
+    --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#43534c;
     --field:#0f1714; --seg:rgba(255,255,255,.09);
     --accent:#55d8a8; --accent-ink:#03241a; --focus:#8ab8ff;
     --good:#62dfb0; --bad:#ff9a8f; --warn:#f3c14e;
@@ -42,7 +42,7 @@
   --bg:#090f0d;
   --ink:#f2f6f4; --ink2:#c6d1cc; --ink3:#9daaa4;
   --line:rgba(255,255,255,.15); --line2:rgba(255,255,255,.34);
-  --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#27332e;
+  --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#43534c;
   --field:#0f1714; --seg:rgba(255,255,255,.09);
   --accent:#55d8a8; --accent-ink:#03241a; --focus:#8ab8ff;
   --good:#62dfb0; --bad:#ff9a8f; --warn:#f3c14e;
@@ -143,6 +143,19 @@ button{cursor:pointer}
 .fields{display:grid;gap:14px}
 .fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media (max-width:420px){.fields.two.stack{grid-template-columns:1fr}}
+@media (max-width:560px){
+  /* Dos columnas estrechas: las etiquetas reservan dos líneas para que los campos queden alineados */
+  .fields.two:not(.stack) .field label{min-height:2.7em;display:flex;align-items:flex-end}
+  .fields.two:not(.stack) .inp{padding-left:12px}
+  .fields.two:not(.stack) .inp input{font-size:1.3rem}
+  .fields.two:not(.stack) .inp .unit{font-size:.84rem;padding-right:6px}
+  .mark{width:38px;height:38px;border-radius:11px;font-size:.95rem}
+  .tabs .seg button{min-height:40px}
+  .top-in{gap:6px 12px;padding-top:8px;padding-bottom:8px}
+  .icon-btn{height:40px;min-width:40px}
+  .btn.big{font-size:1.18rem;padding:8px 12px;white-space:nowrap}
+  .actions .btn:not(.big){padding:0 14px}
+}
 .field label{display:block;font-weight:600;font-size:.95rem;margin-bottom:6px;color:var(--ink)}
 .inp{
   display:flex;align-items:center;min-height:58px;background:var(--field);
@@ -191,8 +204,8 @@ textarea:focus{outline:0;border-color:var(--focus)}
 
 /* ───────── Simulador ───────── */
 main{padding:18px 0 120px}
-.sim{display:grid;gap:16px}
-.col{display:grid;gap:16px;align-content:start;min-width:0}
+.sim{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.col{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-content:start;min-width:0}
 @media (min-width:900px){
   main{padding:26px 0 60px}
   .sim{grid-template-columns:minmax(350px,5fr) 7fr;gap:22px;align-items:start}
@@ -255,6 +268,8 @@ th:first-child,td:first-child{text-align:left}
 thead th{font-size:.82rem;font-weight:650;color:var(--ink2);background:var(--seg)}
 tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
 tbody th{font-weight:600}
+.sup tbody th{white-space:normal}
+@media (max-width:560px){.sup table,.sup thead th{font-size:.78rem}.sup th,.sup td{padding:9px 5px}.sup th:first-child{padding-left:10px}.sup td:last-child,.sup thead th:last-child{padding-right:10px}}
 td.good{color:var(--good);font-weight:650}td.bad{color:var(--bad);font-weight:650}
 
 /* Barra fija en móvil */
@@ -271,7 +286,7 @@ td.good{color:var(--good);font-weight:650}td.bad{color:var(--bad);font-weight:65
 @media (min-width:900px){.dock{display:none!important}}
 
 /* ───────── Gestión ───────── */
-.ges{display:grid;gap:16px}
+.ges{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 .ges .panel{min-width:0;scroll-margin-top:calc(var(--top-h) + 12px)}
 @media (min-width:1000px){.ges{gap:22px;grid-template-columns:repeat(2,minmax(0,1fr))}.ges .full{grid-column:1/-1}}
 .fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
@@ -390,7 +405,7 @@ footer{padding:0 0 24px;color:var(--ink3);font-size:.86rem;text-align:center}
         <div class="fields two">
           <div class="field" data-f="cerdos">
             <label for="i-cerdos" id="l-cerdos">Cerdos al año</label>
-            <div class="inp"><input id="i-cerdos" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" aria-describedby="e-cerdos"><span class="unit" aria-hidden="true">cerdos</span></div>
+            <div class="inp"><input id="i-cerdos" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" aria-describedby="e-cerdos"></div>
             <p class="err" id="e-cerdos" role="alert"></p>
           </div>
           <div class="field" data-f="kg">
@@ -1238,12 +1253,17 @@ form.addEventListener('submit', ev => {
   }
   const eraEjemplo = G.example;
   addLots([l]);
-  form.reset(); renderPreview();
-  msg.className = 'msg ok';
-  msg.textContent = `Cierre guardado: ${l.nave}${l.lote ? ' · ' + l.lote : ''}.${eraEjemplo ? ' Se han retirado los lotes de ejemplo.' : ''}`;
+  const texto = `Cierre guardado: ${l.nave}${l.lote ? ' · ' + l.lote : ''}.${eraEjemplo ? ' Se han retirado los lotes de ejemplo.' : ''}`;
+  savedMsg = texto;
+  form.reset();
 });
+let savedMsg = '';
 form.addEventListener('reset', () => {
-  setTimeout(() => { ['nave', 'lote', ...Object.keys(GF)].forEach(k => setFieldErr(gWrap(k), '')); $('#g-msg').textContent = ''; renderPreview(); }, 0);
+  setTimeout(() => {
+    ['nave', 'lote', ...Object.keys(GF)].forEach(k => setFieldErr(gWrap(k), ''));
+    const msg = $('#g-msg'); msg.className = 'msg ok'; msg.textContent = savedMsg; savedMsg = '';
+    renderPreview();
+  }, 0);
 });
 $$('input[name="via"]').forEach(rb => rb.addEventListener('change', () => {
   form.hidden = rb.value !== 'man'; $('#csv-box').hidden = rb.value !== 'csv';
