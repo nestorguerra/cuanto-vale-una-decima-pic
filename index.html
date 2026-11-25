@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>¿Cuánto vale una décima?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230a6a4e'/%3E%3Ctext x='32' y='42' font-family='-apple-system,Segoe UI,Arial,sans-serif' font-size='28' font-weight='700' text-anchor='middle' fill='%23fff'%3E0,1%3C/text%3E%3C/svg%3E">
+<style>
+/* ───────── Tokens ───────── */
+:root{
+  color-scheme:light;
+  --bg:#edf0ea;
+  --ink:#0b1612; --ink2:#34423c; --ink3:#56645e;
+  --line:rgba(11,22,18,.14); --line2:rgba(11,22,18,.30);
+  --panel:rgba(255,255,255,.64); --panel2:rgba(255,255,255,.90); --solid:#ffffff;
+  --field:#ffffff; --seg:rgba(11,22,18,.08);
+  --accent:#0a6a4e; --accent-ink:#ffffff; --focus:#0a53c2;
+  --good:#0a6a4e; --bad:#b3261e; --warn:#8a5200;
+  --good-soft:rgba(10,106,78,.13); --bad-soft:rgba(179,38,30,.11); --warn-soft:rgba(138,82,0,.14);
+  --blob1:rgba(242,193,78,.50); --blob2:rgba(96,200,150,.42); --blob3:rgba(140,200,225,.40);
+  --shadow:0 1px 0 rgba(255,255,255,.65) inset, 0 18px 44px -22px rgba(11,22,18,.38);
+  --r:24px; --r-sm:15px; --top-h:72px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#090f0d;
+    --ink:#f2f6f4; --ink2:#c6d1cc; --ink3:#9daaa4;
+    --line:rgba(255,255,255,.15); --line2:rgba(255,255,255,.34);
+    --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#27332e;
+    --field:#0f1714; --seg:rgba(255,255,255,.09);
+    --accent:#55d8a8; --accent-ink:#03241a; --focus:#8ab8ff;
+    --good:#62dfb0; --bad:#ff9a8f; --warn:#f3c14e;
+    --good-soft:rgba(98,223,176,.15); --bad-soft:rgba(255,154,143,.15); --warn-soft:rgba(243,193,78,.15);
+    --blob1:rgba(140,100,10,.40); --blob2:rgba(12,110,78,.42); --blob3:rgba(20,70,95,.45);
+    --shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 44px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#090f0d;
+  --ink:#f2f6f4; --ink2:#c6d1cc; --ink3:#9daaa4;
+  --line:rgba(255,255,255,.15); --line2:rgba(255,255,255,.34);
+  --panel:rgba(27,36,32,.62); --panel2:rgba(34,44,40,.90); --solid:#27332e;
+  --field:#0f1714; --seg:rgba(255,255,255,.09);
+  --accent:#55d8a8; --accent-ink:#03241a; --focus:#8ab8ff;
+  --good:#62dfb0; --bad:#ff9a8f; --warn:#f3c14e;
+  --good-soft:rgba(98,223,176,.15); --bad-soft:rgba(255,154,143,.15); --warn-soft:rgba(243,193,78,.15);
+  --blob1:rgba(140,100,10,.40); --blob2:rgba(12,110,78,.42); --blob3:rgba(20,70,95,.45);
+  --shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 18px 44px -22px rgba(0,0,0,.8);
+}
+
+/* ───────── Base ───────── */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:100%;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+@media (min-width:1700px){html{font-size:112.5%}}
+html.proj{font-size:118%}
+@media (min-width:1700px){html.proj{font-size:135%}}
+body{
+  margin:0;min-height:100vh;min-height:100dvh;
+  font:400 1rem/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);background:var(--bg);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(55vmax 45vmax at 6% -8%,var(--blob1),transparent 62%),
+    radial-gradient(50vmax 50vmax at 104% 12%,var(--blob2),transparent 60%),
+    radial-gradient(60vmax 45vmax at 40% 112%,var(--blob3),transparent 62%);
+}
+h1,h2,h3,p{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.num,input,table{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1320px;margin:0 auto;padding:0 16px}
+@media (min-width:900px){.wrap{padding:0 28px}}
+
+/* ───────── Glass ───────── */
+.glass{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  -webkit-backdrop-filter:blur(24px) saturate(165%);backdrop-filter:blur(24px) saturate(165%);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass,.top{background:var(--panel2)}
+}
+.panel{padding:18px}
+@media (min-width:900px){.panel{padding:24px}}
+.panel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px;margin-bottom:16px}
+.panel h2{font-size:1.2rem;font-weight:700;letter-spacing:-.01em}
+.lead{color:var(--ink2);font-size:.97rem;margin:-8px 0 16px;max-width:72ch}
+.note{color:var(--ink3);font-size:.9rem}
+
+/* ───────── Cabecera ───────── */
+.top{
+  position:sticky;top:0;z-index:20;
+  background:var(--panel);border-bottom:1px solid var(--line);
+  -webkit-backdrop-filter:blur(26px) saturate(170%);backdrop-filter:blur(26px) saturate(170%);
+  padding-top:env(safe-area-inset-top);
+}
+.top-in{display:grid;grid-template-columns:1fr auto;grid-template-areas:"brand tools" "tabs tabs";gap:8px 12px;align-items:center;padding-top:10px;padding-bottom:10px}
+.brand{grid-area:brand;display:flex;align-items:center;gap:12px;min-width:0}
+.mark{
+  flex:none;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#0f8a66,#064a37);color:#fff;font-weight:800;font-size:1.05rem;letter-spacing:-.03em;
+  box-shadow:0 6px 16px -8px rgba(6,74,55,.9), 0 1px 0 rgba(255,255,255,.3) inset;
+}
+.mark i{font-style:normal;color:#f6c955}
+.brand h1{font-size:1.08rem;font-weight:700;letter-spacing:-.015em;line-height:1.15}
+.brand p{font-size:.84rem;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{grid-area:tabs}
+.tools{grid-area:tools;display:flex;gap:8px}
+.icon-btn{
+  min-width:44px;height:44px;padding:0 12px;border-radius:13px;border:1px solid var(--line);background:var(--panel2);
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:600;font-size:.92rem;
+}
+.icon-btn svg{width:20px;height:20px;flex:none}
+.icon-btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+#b-proj{display:none}
+@media (min-width:900px){
+  .top-in{grid-template-columns:1fr auto 1fr;grid-template-areas:"brand tabs tools";padding-top:12px;padding-bottom:12px}
+  .tools{justify-content:flex-end}
+  #b-proj{display:inline-flex}
+  .brand h1{font-size:1.2rem}
+}
+
+/* ───────── Segmentados y pestañas ───────── */
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;padding:3px;border-radius:15px;background:var(--seg);border:1px solid var(--line);position:relative}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label,.seg button{
+  min-height:44px;display:grid;place-items:center;padding:0 20px;border-radius:12px;border:0;background:none;
+  font-weight:600;font-size:1rem;color:var(--ink2);cursor:pointer;white-space:nowrap;
+}
+.seg input:checked+label,.seg button[aria-selected="true"]{background:var(--solid);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.20)}
+.seg input:focus-visible+label{outline:3px solid var(--focus);outline-offset:2px}
+@media (min-width:900px){.tabs .seg button{min-width:150px}}
+
+/* ───────── Campos ───────── */
+.fields{display:grid;gap:14px}
+.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:420px){.fields.two.stack{grid-template-columns:1fr}}
+.field label{display:block;font-weight:600;font-size:.95rem;margin-bottom:6px;color:var(--ink)}
+.inp{
+  display:flex;align-items:center;min-height:58px;background:var(--field);
+  border:1.5px solid var(--line2);border-radius:var(--r-sm);padding:0 6px 0 14px;gap:8px;
+}
+.inp:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 28%,transparent)}
+.inp input{
+  flex:1;min-width:0;width:100%;height:54px;border:0;background:none;outline:0;
+  font-size:1.4rem;font-weight:600;letter-spacing:-.01em;padding:0;
+}
+.inp .unit{flex:none;color:var(--ink3);font-size:.92rem;font-weight:500;padding-right:8px}
+.field.bad .inp{border-color:var(--bad)}
+.field .hint{font-size:.88rem;color:var(--ink3);margin-top:5px;min-height:1.25em}
+.field .err{font-size:.88rem;color:var(--bad);font-weight:600;margin-top:5px}
+.field .err:empty{display:none}
+.field.bad .hint{display:none}
+.step{
+  flex:none;min-width:48px;height:44px;border-radius:11px;border:1px solid var(--line);background:var(--seg);
+  font-weight:700;font-size:.95rem;padding:0 8px;
+}
+.inp.sm{min-height:52px}
+.inp.sm input{height:48px;font-size:1.15rem}
+textarea{
+  width:100%;min-height:150px;resize:vertical;background:var(--field);border:1.5px solid var(--line2);border-radius:var(--r-sm);
+  padding:12px 14px;font:500 .95rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+textarea:focus{outline:0;border-color:var(--focus)}
+
+/* ───────── Botones ───────── */
+.btn{
+  min-height:52px;padding:0 20px;border-radius:16px;border:1px solid var(--line2);background:var(--panel2);
+  font-weight:650;font-size:1.02rem;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-align:center;
+  transition:transform .12s ease, filter .12s ease;
+}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;box-shadow:0 10px 24px -12px var(--accent)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.big{min-height:68px;font-size:1.3rem;border-radius:20px;flex-direction:column;gap:0;line-height:1.15;padding:8px 22px}
+.btn.big small{font-size:.86rem;font-weight:500;opacity:.92}
+.btn.sm{min-height:44px;font-size:.93rem;padding:0 14px;border-radius:13px}
+.btn.danger{color:var(--bad)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:10px;margin-top:16px;scroll-margin-top:calc(var(--top-h) + 12px)}
+.actions .grow{flex:1}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+/* ───────── Simulador ───────── */
+main{padding:18px 0 120px}
+.sim{display:grid;gap:16px}
+.col{display:grid;gap:16px;align-content:start;min-width:0}
+@media (min-width:900px){
+  main{padding:26px 0 60px}
+  .sim{grid-template-columns:minmax(350px,5fr) 7fr;gap:22px;align-items:start}
+  .col-in{position:sticky;top:calc(var(--top-h) + 22px)}
+  .col{gap:22px}
+}
+.hero{
+  --hero-a:#27352f;--hero-b:#121a17;
+  border-radius:calc(var(--r) + 4px);padding:22px 20px;color:#fff;position:relative;overflow:hidden;
+  background:linear-gradient(140deg,var(--hero-a),var(--hero-b));
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:0 1px 0 rgba(255,255,255,.22) inset, 0 26px 50px -26px var(--hero-b);
+  scroll-margin-top:calc(var(--top-h) + 12px);
+}
+.hero::after{content:"";position:absolute;right:-18%;top:-60%;width:70%;height:150%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.17),transparent);pointer-events:none}
+.hero.is-good{--hero-a:#0d8762;--hero-b:#054433}
+.hero.is-bad{--hero-a:#bd2c22;--hero-b:#70120d}
+.hero-l{font-size:1.05rem;font-weight:650;letter-spacing:.005em;display:flex;align-items:center;gap:10px}
+.hero-l .dot{width:10px;height:10px;border-radius:50%;background:#f6c955;flex:none}
+.hero-v{
+  --fs:clamp(3rem,13vw,4.4rem);--k:1;
+  font-size:calc(var(--fs)*var(--k));font-weight:750;letter-spacing:-.035em;line-height:1.04;margin:6px 0 4px;white-space:nowrap;
+}
+.hero-v.long{--k:.76}
+.hero-v.xlong{--k:.58}
+.hero-s{font-size:1.05rem;color:rgba(255,255,255,.90)}
+.loads{margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.24);position:relative;z-index:1}
+.loads-t{font-size:1.12rem;font-weight:650}
+.loads-t b{font-size:1.5rem;font-weight:750;letter-spacing:-.02em}
+.loads-s{font-size:.95rem;color:rgba(255,255,255,.88)}
+.trucks{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px;min-height:62px}
+.truck{
+  width:66px;padding:7px 6px 5px;border-radius:13px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);
+  display:grid;justify-items:center;gap:1px;font-size:.74rem;font-weight:650;
+}
+.truck svg{width:46px;height:26px;display:block}
+.truck.more{place-content:center;font-size:.95rem}
+.truck.in{animation:roll .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i)*95ms)}
+@keyframes roll{from{opacity:0;transform:translateX(-38px) scale(.9)}to{opacity:1;transform:none}}
+@media (min-width:900px){
+  .hero{padding:30px 32px}
+  .hero-v{--fs:clamp(4rem,7.4vw,7.2rem)}
+  .hero-l{font-size:1.2rem}
+  .hero-s{font-size:1.15rem}
+  .truck{width:76px}.truck svg{width:54px;height:30px}
+}
+.tiles{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.tile{padding:16px 18px}
+.tile h3{font-size:.92rem;font-weight:650;color:var(--ink2)}
+.tile .v{font-size:1.95rem;font-weight:750;letter-spacing:-.025em;line-height:1.15;margin:4px 0 2px;white-space:nowrap}
+.tile .v small{font-size:1rem;font-weight:600;color:var(--ink2);letter-spacing:0}
+.tile .s{font-size:.9rem;color:var(--ink2)}
+.tile .v.good{color:var(--good)}.tile .v.bad{color:var(--bad)}
+.sup ul{margin:0;padding-left:1.15em;display:grid;gap:7px;color:var(--ink2);font-size:.95rem}
+.sup li b{color:var(--ink);font-weight:650}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:14px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel2)}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:.82rem;font-weight:650;color:var(--ink2);background:var(--seg)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+tbody th{font-weight:600}
+td.good{color:var(--good);font-weight:650}td.bad{color:var(--bad);font-weight:650}
+
+/* Barra fija en móvil */
+.dock{
+  position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:30;
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;text-align:left;
+  padding:12px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.2);color:#fff;
+  background:linear-gradient(140deg,#27352f,#121a17);box-shadow:0 18px 36px -14px rgba(0,0,0,.6);
+}
+.dock.is-good{background:linear-gradient(140deg,#0d8762,#054433)}
+.dock.is-bad{background:linear-gradient(140deg,#bd2c22,#70120d)}
+.dock span{font-size:.84rem;font-weight:600;opacity:.92}
+.dock strong{grid-row:1/3;grid-column:2;font-size:1.65rem;font-weight:750;letter-spacing:-.02em;white-space:nowrap}
+@media (min-width:900px){.dock{display:none!important}}
+
+/* ───────── Gestión ───────── */
+.ges{display:grid;gap:16px}
+.ges .panel{min-width:0;scroll-margin-top:calc(var(--top-h) + 12px)}
+@media (min-width:1000px){.ges{gap:22px;grid-template-columns:repeat(2,minmax(0,1fr))}.ges .full{grid-column:1/-1}}
+.fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+.fgrid .field label{font-size:.9rem}
+.preview{margin-top:14px;padding:12px 14px;border-radius:var(--r-sm);background:var(--seg);font-size:.97rem;color:var(--ink2)}
+.preview b{color:var(--ink)}
+.msg{margin-top:12px;font-size:.95rem;font-weight:600;white-space:pre-line}
+.msg:empty{display:none}
+.msg.ok{color:var(--good)}.msg.bad{color:var(--bad)}
+.banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:var(--r-sm);background:var(--warn-soft);color:var(--ink);font-size:.95rem;margin-bottom:14px;border:1px solid var(--line)}
+.lotes{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.lote{background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.lote header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lote h3{font-size:1.05rem;font-weight:700}
+.lote h3 span{font-weight:500;color:var(--ink3)}
+.lote .ic{font-size:1.8rem;font-weight:750;letter-spacing:-.02em;line-height:1}
+.lote .ic small{display:block;font-size:.74rem;font-weight:600;color:var(--ink3);letter-spacing:0;text-align:right;margin-top:2px}
+.kv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 12px;font-size:.9rem;margin:0}
+.kv div{display:flex;flex-direction:column}
+.kv dt{color:var(--ink3);font-size:.8rem}
+.kv dd{margin:0;font-weight:650}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.82rem;font-weight:650;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.na{background:var(--seg);color:var(--ink2)}
+.empty{padding:26px 16px;text-align:center;color:var(--ink2);border:1.5px dashed var(--line2);border-radius:var(--r-sm)}
+.sums{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.sum{background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
+.sum h3{font-size:.95rem;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.eq{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:.97rem;margin:0}
+.eq dt{color:var(--ink2)}
+.eq dd{margin:0;text-align:right;font-weight:650}
+.eq .tot{border-top:1px solid var(--line2);padding-top:6px;margin-top:4px;font-weight:750;color:var(--ink)}
+.rank{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.rank li{display:grid;gap:6px}
+.rk-h{display:flex;align-items:baseline;gap:10px}
+.rk-n{flex:none;width:28px;height:28px;border-radius:9px;background:var(--seg);display:grid;place-items:center;font-size:.86rem;font-weight:700;align-self:center}
+.rk-h strong{font-size:1.08rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-v{font-size:1.15rem;font-weight:750;white-space:nowrap}
+.bar{height:14px;border-radius:7px;background:var(--seg);overflow:hidden}
+.bar span{display:block;height:100%;border-radius:7px;min-width:4px}
+.rank .is-bad .rk-v{color:var(--bad)}.rank .is-bad .bar span{background:var(--bad)}
+.rank .is-good .rk-v{color:var(--good)}.rank .is-good .bar span{background:var(--good)}
+.rank .is-na .rk-v{color:var(--ink3)}
+.rk-s{font-size:.9rem;color:var(--ink2)}
+.total{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 14px;padding:12px 14px;border-radius:var(--r-sm);background:var(--bad-soft);margin-bottom:16px}
+.total strong{font-size:1.5rem;font-weight:750;letter-spacing:-.02em;color:var(--bad)}
+.pay-out{margin-top:16px;padding:16px 18px;border-radius:18px;background:var(--panel2);border:1px solid var(--line)}
+.pay-out .l{font-size:.92rem;font-weight:650;color:var(--ink2)}
+.pay-out .v{font-size:2.2rem;font-weight:750;letter-spacing:-.03em;line-height:1.1;margin:2px 0 4px}
+.pay-out .v.bad{color:var(--bad);font-size:1.5rem}
+.track{position:relative;height:16px;border-radius:8px;background:var(--seg);margin:16px 0 4px;overflow:hidden}
+.track span{position:absolute;inset:0 auto 0 0;background:var(--bad);opacity:.85}
+.track i{position:absolute;inset:0 0 0 auto;background:var(--good)}
+.ticks{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink3)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.84rem;color:var(--ink2);margin-top:8px}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+footer{padding:0 0 24px;color:var(--ink3);font-size:.86rem;text-align:center}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+@media print{
+  .top,.dock,.actions,.tools{display:none!important}
+  body::before{display:none}
+  .glass{box-shadow:none;background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">0<i>,</i>1</span>
+      <div style="min-width:0">
+        <h1>¿Cuánto vale una décima?</h1>
+        <p>El índice de conversión, en euros</p>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="seg" role="tablist" aria-label="Secciones">
+        <button type="button" role="tab" id="t-sim" aria-controls="p-sim" aria-selected="true">Simulador</button>
+        <button type="button" role="tab" id="t-ges" aria-controls="p-ges" aria-selected="false" tabindex="-1">Gestión</button>
+      </div>
+    </div>
+    <div class="tools">
+      <button type="button" class="icon-btn" id="b-proj" aria-pressed="false" title="Texto más grande y pantalla completa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+        Proyectar
+      </button>
+      <button type="button" class="icon-btn" id="b-theme" aria-label="Cambiar entre tema claro y oscuro" title="Tema claro / oscuro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ═════════ SIMULADOR ═════════ -->
+<section id="p-sim" role="tabpanel" aria-labelledby="t-sim">
+  <div class="sim">
+    <div class="col col-in">
+      <div class="glass panel">
+        <div class="panel-head">
+          <h2>Situación actual</h2>
+          <div class="seg" role="radiogroup" aria-label="Periodo del cálculo">
+            <input type="radio" name="modo" id="m-lote" value="lote"><label for="m-lote">Lote</label>
+            <input type="radio" name="modo" id="m-anio" value="anio" checked><label for="m-anio">Año</label>
+          </div>
+        </div>
+        <div class="fields two">
+          <div class="field" data-f="cerdos">
+            <label for="i-cerdos" id="l-cerdos">Cerdos al año</label>
+            <div class="inp"><input id="i-cerdos" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="done" aria-describedby="e-cerdos"><span class="unit" aria-hidden="true">cerdos</span></div>
+            <p class="err" id="e-cerdos" role="alert"></p>
+          </div>
+          <div class="field" data-f="kg">
+            <label for="i-kg">Kilos vivos ganados por cerdo</label>
+            <div class="inp"><input id="i-kg" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-describedby="e-kg"><span class="unit" aria-hidden="true">kg</span></div>
+            <p class="err" id="e-kg" role="alert"></p>
+          </div>
+          <div class="field" data-f="ic">
+            <label for="i-ic">Índice de conversión actual</label>
+            <div class="inp"><input id="i-ic" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-describedby="e-ic"><span class="unit" aria-hidden="true">kg/kg</span></div>
+            <p class="err" id="e-ic" role="alert"></p>
+          </div>
+          <div class="field" data-f="precio">
+            <label for="i-precio">Precio del pienso</label>
+            <div class="inp"><input id="i-precio" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-describedby="e-precio"><span class="unit" aria-hidden="true">€/t</span></div>
+            <p class="err" id="e-precio" role="alert"></p>
+          </div>
+        </div>
+        <div class="row" style="margin-top:14px;justify-content:space-between">
+          <p class="note">Se admite coma decimal: 2,90</p>
+          <button type="button" class="btn sm" id="b-demo">Cargar demo</button>
+        </div>
+      </div>
+
+      <div class="glass panel" id="alt-panel">
+        <div class="panel-head"><h2>Escenario alternativo</h2></div>
+        <div class="fields two stack">
+          <div class="field" data-f="icAlt">
+            <label for="i-icAlt">Índice simulado</label>
+            <div class="inp"><input id="i-icAlt" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-describedby="h-icAlt e-icAlt"><span class="unit" aria-hidden="true">kg/kg</span></div>
+            <p class="hint" id="h-icAlt"></p>
+            <p class="err" id="e-icAlt" role="alert"></p>
+          </div>
+          <div class="field" data-f="precioAlt">
+            <label for="i-precioAlt">Precio del pienso simulado</label>
+            <div class="inp">
+              <input id="i-precioAlt" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="done" aria-describedby="h-precioAlt e-precioAlt"><span class="unit" aria-hidden="true">€/t</span>
+              <button type="button" class="step" id="b-pm" aria-label="Bajar el precio simulado 10 euros por tonelada">−10</button>
+              <button type="button" class="step" id="b-pp" aria-label="Subir el precio simulado 10 euros por tonelada">+10</button>
+            </div>
+            <p class="hint" id="h-precioAlt"></p>
+            <p class="err" id="e-precioAlt" role="alert"></p>
+          </div>
+        </div>
+        <div class="actions" id="acts">
+          <button type="button" class="btn primary big grow" id="b-mejorar">Mejorar 0,10<small id="b-mejorar-s"></small></button>
+          <button type="button" class="btn" id="b-reset">Restablecer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col col-out">
+      <div class="hero" id="hero">
+        <p class="hero-l"><span class="dot" aria-hidden="true"></span><span id="hero-l">Ahorro estimado en pienso</span></p>
+        <p class="hero-v num" id="hero-v">0 €</p>
+        <p class="hero-s" id="hero-s"></p>
+        <div class="loads">
+          <p class="loads-t" id="loads-t"></p>
+          <p class="loads-s" id="loads-s"></p>
+          <ul class="trucks" id="trucks" aria-hidden="true"></ul>
+        </div>
+      </div>
+      <p class="sr" id="live" role="status" aria-live="polite"></p>
+
+      <div class="tiles">
+        <div class="glass tile">
+          <h3>Toneladas de pienso (simulado)</h3>
+          <p class="v num" id="t-ton">—</p>
+          <p class="s" id="t-ton-s"></p>
+        </div>
+        <div class="glass tile">
+          <h3 id="t-cerdo-l">Ahorro por cerdo</h3>
+          <p class="v num" id="t-cerdo">—</p>
+          <p class="s" id="t-cerdo-s"></p>
+        </div>
+        <div class="glass tile">
+          <h3>Precio de equilibrio</h3>
+          <p class="v num" id="t-eq">—</p>
+          <p class="s" id="t-eq-s"></p>
+        </div>
+      </div>
+
+      <div class="glass panel sup">
+        <div class="panel-head"><h2>Supuestos y cálculo</h2></div>
+        <ul id="sup-list"></ul>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th scope="col">Concepto</th><th scope="col">Actual</th><th scope="col">Simulado</th><th scope="col">Diferencia</th></tr></thead>
+            <tbody id="cmp"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════ GESTIÓN ═════════ -->
+<section id="p-ges" role="tabpanel" aria-labelledby="t-ges" hidden>
+  <div class="ges">
+
+    <div class="glass panel full">
+      <div class="panel-head">
+        <h2>Cierre por lote</h2>
+        <div class="seg" role="radiogroup" aria-label="Forma de introducir el cierre">
+          <input type="radio" name="via" id="v-man" value="man" checked><label for="v-man">Manual</label>
+          <input type="radio" name="via" id="v-csv" value="csv"><label for="v-csv">CSV</label>
+        </div>
+      </div>
+
+      <form id="f-lote" novalidate>
+        <div class="fgrid">
+          <div class="field" data-g="nave"><label for="g-nave">Nave</label><div class="inp sm"><input id="g-nave" type="text" autocomplete="off" maxlength="40"></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="lote"><label for="g-lote">Lote</label><div class="inp sm"><input id="g-lote" type="text" autocomplete="off" maxlength="40" placeholder="Opcional"></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="entrados"><label for="g-entrados">Animales entrados</label><div class="inp sm"><input id="g-entrados" type="text" inputmode="numeric" autocomplete="off"></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="bajas"><label for="g-bajas">Bajas</label><div class="inp sm"><input id="g-bajas" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="salidos"><label for="g-salidos">Animales salidos</label><div class="inp sm"><input id="g-salidos" type="text" inputmode="numeric" autocomplete="off"></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="pesoEnt"><label for="g-pesoEnt">Peso de entrada</label><div class="inp sm"><input id="g-pesoEnt" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">kg</span></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="pesoSal"><label for="g-pesoSal">Peso de salida</label><div class="inp sm"><input id="g-pesoSal" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">kg</span></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="entregado"><label for="g-entregado">Pienso entregado</label><div class="inp sm"><input id="g-entregado" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">t</span></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="sobrante"><label for="g-sobrante">Pienso sobrante</label><div class="inp sm"><input id="g-sobrante" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><span class="unit" aria-hidden="true">t</span></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="registrado"><label for="g-registrado">Consumo registrado</label><div class="inp sm"><input id="g-registrado" type="text" inputmode="decimal" autocomplete="off" placeholder="Opcional"><span class="unit" aria-hidden="true">t</span></div><p class="err" role="alert"></p></div>
+          <div class="field" data-g="precio"><label for="g-precio">Precio del pienso</label><div class="inp sm"><input id="g-precio" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">€/t</span></div><p class="err" role="alert"></p></div>
+        </div>
+        <p class="preview" id="g-prev">Rellena el lote para ver su índice de conversión y si cuadran animales y pienso.</p>
+        <div class="actions">
+          <button type="submit" class="btn primary grow">Guardar cierre</button>
+          <button type="reset" class="btn">Limpiar</button>
+        </div>
+        <p class="msg" id="g-msg" role="status"></p>
+      </form>
+
+      <div id="csv-box" hidden>
+        <p class="lead" style="margin-top:0">Un lote por línea, separado por punto y coma, con coma decimal. Columnas: <b>nave; lote; entrados; bajas; salidos; peso_entrada_kg; peso_salida_kg; pienso_entregado_t; pienso_sobrante_t; pienso_registrado_t; precio_eur_t</b>. Si el archivo va separado por comas, usa punto decimal.</p>
+        <div class="row" style="margin-bottom:12px">
+          <label class="btn" for="csv-file">Elegir archivo CSV</label>
+          <input class="sr" type="file" id="csv-file" accept=".csv,.txt,text/csv,text/plain">
+          <button type="button" class="btn" id="b-tpl">Descargar plantilla</button>
+        </div>
+        <div class="field">
+          <label for="csv-text">O pega aquí el contenido del CSV</label>
+          <textarea id="csv-text" spellcheck="false" placeholder="nave;lote;entrados;bajas;salidos;peso_entrada_kg;peso_salida_kg;pienso_entregado_t;pienso_sobrante_t;pienso_registrado_t;precio_eur_t"></textarea>
+        </div>
+        <div class="actions"><button type="button" class="btn primary grow" id="b-import">Importar lotes</button></div>
+        <p class="msg" id="csv-msg" role="status"></p>
+      </div>
+    </div>
+
+    <div class="glass panel full" id="lotes-panel">
+      <div class="panel-head">
+        <h2 id="lotes-h">Lotes cerrados</h2>
+        <div class="row">
+          <button type="button" class="btn sm" id="b-export">Exportar CSV</button>
+          <button type="button" class="btn sm danger" id="b-clear">Vaciar</button>
+        </div>
+      </div>
+      <div class="banner" id="ej-banner" hidden><span>Estos lotes son un <b>ejemplo</b>. Se sustituyen al guardar o importar tu primer cierre.</span></div>
+      <div class="lotes" id="lotes"></div>
+      <p class="note" style="margin-top:12px">Índice = pienso consumido (entregado − sobrante) ÷ kilos ganados (kilos salidos − kilos entrados). Los datos se guardan solo en este dispositivo.</p>
+    </div>
+
+    <div class="glass panel full">
+      <div class="panel-head"><h2>Conciliación de animales y pienso</h2></div>
+      <p class="lead">Animales: entrados − bajas − salidos debe dar cero. Pienso: entregado − sobrante debe coincidir con el consumo registrado en granja (tolerancia del 1 %).</p>
+      <div class="sums" id="conc-sums"></div>
+      <div class="tbl-wrap" id="conc-wrap">
+        <table style="min-width:820px">
+          <thead><tr>
+            <th scope="col">Nave · lote</th><th scope="col">Entrados</th><th scope="col">Bajas</th><th scope="col">Salidos</th><th scope="col">Sin justificar</th>
+            <th scope="col">Entregado t</th><th scope="col">Sobrante t</th><th scope="col">Registrado t</th><th scope="col">Descuadre t</th><th scope="col">Valor</th>
+          </tr></thead>
+          <tbody id="conc-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass panel">
+      <div class="panel-head"><h2>Ranking de naves por sobrecoste</h2></div>
+      <p class="lead">Cada lote se compara con los lotes de otras naves de peso similar. Sobrecoste = (índice del lote − índice de sus comparables) × kilos ganados × precio del pienso.</p>
+      <div class="fields two" style="margin-bottom:16px">
+        <div class="field" data-t="tolE"><label for="r-tolE">Peso de entrada similar</label><div class="inp sm"><span class="unit" aria-hidden="true">±</span><input id="r-tolE" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">kg</span></div><p class="err" role="alert"></p></div>
+        <div class="field" data-t="tolS"><label for="r-tolS">Peso de salida similar</label><div class="inp sm"><span class="unit" aria-hidden="true">±</span><input id="r-tolS" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">kg</span></div><p class="err" role="alert"></p></div>
+      </div>
+      <div id="rank-box"></div>
+    </div>
+
+    <div class="glass panel">
+      <div class="panel-head">
+        <h2>Plazo de recuperación</h2>
+        <div class="seg" role="radiogroup" aria-label="Origen del ahorro anual">
+          <input type="radio" name="fuente" id="pf-sim" value="sim" checked><label for="pf-sim">Simulador</label>
+          <input type="radio" name="fuente" id="pf-man" value="manual"><label for="pf-man">Manual</label>
+        </div>
+      </div>
+      <p class="lead">Años que tarda el ahorro en pienso en devolver una inversión.</p>
+      <div class="fields two stack">
+        <div class="field" data-p="inv"><label for="p-inv">Inversión</label><div class="inp sm"><input id="p-inv" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">€</span></div><p class="err" role="alert"></p></div>
+        <div class="field" data-p="gasto"><label for="p-gasto">Gasto anual asociado</label><div class="inp sm"><input id="p-gasto" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">€/año</span></div><p class="err" role="alert"></p></div>
+        <div class="field" data-p="manual" id="pw-manual" hidden><label for="p-manual">Ahorro anual</label><div class="inp sm"><input id="p-manual" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">€/año</span></div><p class="err" role="alert"></p></div>
+        <div class="field" data-p="lotesAnio" id="pw-lotes" hidden><label for="p-lotesAnio">Lotes al año</label><div class="inp sm"><input id="p-lotesAnio" type="text" inputmode="decimal" autocomplete="off"><span class="unit" aria-hidden="true">lotes</span></div><p class="err" role="alert"></p></div>
+      </div>
+      <div class="pay-out" id="pay-out" role="status"></div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+
+<footer class="wrap">Estimación del coste de pienso. No sustituye a la contabilidad de la explotación.</footer>
+
+<button type="button" class="dock" id="dock" hidden>
+  <span id="dock-l">Ahorro estimado en pienso</span>
+  <strong class="num" id="dock-v">0 €</strong>
+  <span id="dock-s"></span>
+</button>
+
+<script>
+(() => {
+'use strict';
+
+/* ───────── Utilidades ───────── */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const RM = window.matchMedia('(prefers-reduced-motion: reduce)');
+const MOBILE = window.matchMedia('(max-width: 899px)');
+const r2 = n => Math.round(n * 100) / 100;
+const r3 = n => Math.round(n * 1000) / 1000;
+const NB = ' ';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* Formato español propio: punto de millar siempre y coma decimal. */
+function fmt(n, d = 0) {
+  if (!Number.isFinite(n)) return '—';
+  const s = Math.abs(n).toFixed(d);
+  let [i, f] = s.split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const neg = n < 0 && Number(s) !== 0;
+  return (neg ? '−' : '') + i + (f ? ',' + f : '');
+}
+function fmtFlex(n, max = 2) {
+  const s = fmt(n, max);
+  return s.includes(',') ? s.replace(/0+$/, '').replace(/,$/, '') : s;
+}
+const eur = (n, d = 0) => fmt(n, d) + NB + '€';
+const signed = (n, d = 0, flex = false) => (n > 0 ? '+' : '') + (flex ? fmtFlex(n, d) : fmt(n, d));
+
+/* Acepta coma decimal. kind 'big': un punto seguido de tres cifras es separador de millar (20.000).
+   kind 'dec': sin coma, el punto es decimal (2.90). */
+function parseNum(str, kind) {
+  if (typeof str !== 'string') return NaN;
+  let s = str.replace(/[\s €%]/g, '').replace(/−/g, '-');
+  if (s === '') return NaN;
+  if (s.includes(',')) {
+    if (s.split(',').length > 2) return NaN;
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (s.includes('.')) {
+    const many = s.split('.').length > 2;
+    if ((kind === 'big' || many) && /^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+  }
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return NaN;
+  return Number(s);
+}
+
+function tween(el, to, dur, render) {
+  const from = Number.isFinite(el._v) ? el._v : to;
+  cancelAnimationFrame(el._raf); clearTimeout(el._to);
+  const end = () => { cancelAnimationFrame(el._raf); el._v = to; el.textContent = render(to); };
+  if (RM.matches || !dur || from === to || !Number.isFinite(to)) { end(); return; }
+  const t0 = performance.now();
+  const step = t => {
+    const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+    el._v = from + (to - from) * e;
+    el.textContent = render(el._v);
+    if (p < 1) el._raf = requestAnimationFrame(step); else end();
+  };
+  el._raf = requestAnimationFrame(step);
+  el._to = setTimeout(end, dur + 120); // por si la pestaña está en segundo plano
+}
+
+function setFieldErr(wrap, msg) {
+  if (!wrap) return;
+  wrap.classList.toggle('bad', !!msg);
+  const e = $('.err', wrap), i = $('input', wrap);
+  if (e) e.textContent = msg || '';
+  if (i) i.setAttribute('aria-invalid', msg ? 'true' : 'false');
+}
+
+/* ───────── Simulador ───────── */
+const DEMO = { mode: 'anio', cerdos: 20000, kg: 90, ic: 2.9, precio: 320, icAlt: 2.9, precioAlt: 320, linkIc: true, linkPrecio: true };
+const S = { ...DEMO };
+const errs = {};
+const CARGA_T = 30, MAX_TRUCKS = 18;
+
+const F = {
+  cerdos:    { kind: 'big', int: true, max: 1e8, fmt: v => fmt(v, 0) },
+  kg:        { kind: 'dec', max: 1000, fmt: v => fmtFlex(v, 2) },
+  ic:        { kind: 'dec', max: 20, fmt: v => fmt(v, 2) },
+  precio:    { kind: 'big', max: 1e5, fmt: v => fmtFlex(v, 2) },
+  icAlt:     { kind: 'dec', max: 20, fmt: v => fmt(v, 2) },
+  precioAlt: { kind: 'big', max: 1e5, fmt: v => fmtFlex(v, 2) }
+};
+function check(v, c) {
+  if (!Number.isFinite(v)) return 'Escribe un número. Se admite coma decimal.';
+  if (v <= 0) return 'Debe ser mayor que 0.';
+  if (c.int && !Number.isInteger(v)) return 'Debe ser un número entero.';
+  if (c.max && v > c.max) return 'Valor demasiado alto: revisa el dato.';
+  return '';
+}
+const inputOf = k => $('#i-' + k);
+const wrapOf = k => $(`.field[data-f="${k}"]`);
+function setInput(k) { inputOf(k).value = F[k].fmt(S[k]); delete errs[k]; setFieldErr(wrapOf(k), ''); }
+function setAllInputs() { Object.keys(F).forEach(setInput); }
+
+function calcSim(s) {
+  const tA = r3(s.cerdos * s.kg * s.ic / 1000);
+  const tS = r3(s.cerdos * s.kg * s.icAlt / 1000);
+  const cA = tA * s.precio, cS = tS * s.precioAlt;
+  const ahorro = r2(cA - cS);
+  const dT = r3(tA - tS);
+  return { tA, tS, cA, cS, ahorro, dT, cargas: dT / CARGA_T, porCerdo: ahorro / s.cerdos, eq: s.precio * s.ic / s.icAlt };
+}
+let simRes = null;   // último resultado válido (lo usa el plazo de recuperación)
+let trucksShown = 0, trucksSign = 0, liveTimer = 0;
+
+const TRUCK = '<svg viewBox="0 0 72 40" aria-hidden="true"><rect x="2" y="6" width="43" height="21" rx="7" fill="currentColor"/><path d="M48 12h10.5a2 2 0 0 1 1.4.6L68 21v6H48z" fill="currentColor"/><path d="M51.5 15.5h6l5 5.5h-11z" fill="rgba(0,0,0,.38)"/><rect x="2" y="27" width="66" height="3.4" rx="1.7" fill="currentColor"/><g fill="currentColor" stroke="rgba(0,0,0,.45)" stroke-width="2.2"><circle cx="13" cy="31.5" r="5.4"/><circle cx="27" cy="31.5" r="5.4"/><circle cx="57" cy="31.5" r="5.4"/></g></svg>';
+
+function renderTrucks(cargas, reveal) {
+  const ul = $('#trucks');
+  const n = Math.floor(Math.abs(cargas) + 1e-6);
+  const sign = Math.sign(cargas);
+  const show = Math.min(n, MAX_TRUCKS);
+  const from = (sign === trucksSign && reveal) ? Math.min(trucksShown, show) : (reveal ? 0 : show);
+  let h = '';
+  for (let i = 0; i < show; i++) {
+    const anim = i >= from;
+    h += `<li class="truck${anim ? ' in' : ''}" style="--i:${anim ? i - from : 0}">${TRUCK}<span>30${NB}t</span></li>`;
+  }
+  if (n > show) h += `<li class="truck more${reveal ? ' in' : ''}" style="--i:${show - from}">+${fmt(n - show)}</li>`;
+  ul.innerHTML = h;
+  trucksShown = show; trucksSign = sign;
+}
+
+function renderSim(o = {}) {
+  const anio = S.mode === 'anio';
+  $('#l-cerdos').textContent = anio ? 'Cerdos al año' : 'Cerdos del lote';
+  const ok = Object.keys(errs).length === 0;
+
+  // Pistas del escenario alternativo
+  if (!errs.icAlt && !errs.ic) {
+    const d = r2(S.icAlt - S.ic);
+    $('#h-icAlt').textContent = d === 0 ? 'Igual que el actual' : `${signed(d, 2)} frente al actual (${fmt(S.ic, 2)})`;
+  }
+  if (!errs.precioAlt && !errs.precio) {
+    const d = r2(S.precioAlt - S.precio);
+    $('#h-precioAlt').textContent = d === 0 ? 'Igual que el actual' : `${signed(d, 2, true)} €/t frente al actual`;
+  }
+  const next = r2((errs.icAlt ? S.ic : S.icAlt) - 0.1);
+  const bm = $('#b-mejorar');
+  bm.disabled = !(next >= 0.1) || !!errs.ic;
+  $('#b-mejorar-s').textContent = bm.disabled ? '' : `Índice ${fmt(r2(next + 0.1), 2)} → ${fmt(next, 2)}`;
+
+  const hero = $('#hero'), hv = $('#hero-v'), dock = $('#dock');
+  if (!ok) {
+    simRes = null;
+    hero.className = 'hero'; dock.className = 'dock';
+    $('#hero-l').textContent = 'Revisa los datos marcados';
+    cancelAnimationFrame(hv._raf); clearTimeout(hv._to); hv._v = NaN; hv.textContent = '—'; hv.classList.remove('long', 'xlong');
+    $('#hero-s').textContent = 'Hay algún dato que no se puede calcular.';
+    $('#loads-t').textContent = ''; $('#loads-s').textContent = ''; $('#trucks').innerHTML = ''; trucksShown = 0;
+    ['#t-ton', '#t-cerdo', '#t-eq'].forEach(s => { $(s).textContent = '—'; $(s).className = 'v num'; });
+    ['#t-ton-s', '#t-cerdo-s', '#t-eq-s'].forEach(s => { $(s).textContent = ''; });
+    $('#cmp').innerHTML = ''; $('#sup-list').innerHTML = '<li>Corrige los datos para ver el cálculo.</li>';
+    $('#dock-l').textContent = 'Revisa los datos'; $('#dock-v').textContent = '—'; $('#dock-s').textContent = '';
+    renderPay();
+    return;
+  }
+
+  const r = simRes = calcSim(S);
+  const state = r.ahorro > 0 ? 'is-good' : r.ahorro < 0 ? 'is-bad' : '';
+  const word = r.ahorro < 0 ? 'Sobrecoste' : 'Ahorro';
+  const periodo = anio ? 'al año' : 'en este lote';
+  hero.className = 'hero ' + state; dock.className = 'dock ' + state;
+  $('#hero-l').textContent = `${word} estimado en pienso`;
+
+  const txt = eur(Math.abs(r.ahorro));
+  hv.classList.toggle('long', txt.length > 9 && txt.length <= 12);
+  hv.classList.toggle('xlong', txt.length > 12);
+  tween(hv, r.ahorro, o.dur ?? 350, v => eur(Math.abs(Math.round(v))));
+  $('#hero-s').textContent = r.ahorro === 0
+    ? (S.icAlt === S.ic && S.precioAlt === S.precio ? 'Los dos escenarios son iguales. Pulsa «Mejorar 0,10».' : 'Los dos escenarios cuestan lo mismo.')
+    : `${periodo} · ${fmt(S.cerdos)} cerdos · ${fmtFlex(S.kg, 2)} kg ganados por cerdo`;
+
+  // Cargas equivalentes
+  const nc = Math.abs(r.cargas), ncTxt = fmtFlex(nc, 1);
+  if (r.dT === 0) {
+    $('#loads-t').textContent = 'Cargas equivalentes de 30 t';
+    $('#loads-s').textContent = 'Todavía no hay diferencia de toneladas entre los dos escenarios.';
+  } else {
+    const una = ncTxt === '1';
+    $('#loads-t').innerHTML = `<b class="num">${ncTxt}</b> ${una ? 'carga equivalente' : 'cargas equivalentes'} de 30${NB}t ${r.dT > 0 ? 'menos' : 'más'}`;
+    $('#loads-s').textContent = `${fmtFlex(Math.abs(r.dT), 1)} t ${r.dT > 0 ? 'menos' : 'más'} de pienso ${periodo}`;
+  }
+  renderTrucks(r.cargas, !!o.reveal);
+
+  // Indicadores
+  $('#t-ton').innerHTML = `${fmtFlex(r.tS, 1)} <small>t</small>`;
+  $('#t-ton-s').textContent = `Actual: ${fmtFlex(r.tA, 1)} t · Diferencia: ${signed(-r.dT, 1, true)} t`;
+  $('#t-cerdo-l').textContent = `${word} por cerdo`;
+  $('#t-cerdo').innerHTML = `${fmt(Math.abs(r.porCerdo), 2)} <small>€/cerdo</small>`;
+  $('#t-cerdo').className = 'v num ' + (r.ahorro > 0 ? 'good' : r.ahorro < 0 ? 'bad' : '');
+  $('#t-cerdo-s').textContent = `Pienso por cerdo: ${fmt(r.cA / S.cerdos, 2)} € → ${fmt(r.cS / S.cerdos, 2)} €`;
+  $('#t-eq').innerHTML = `${fmt(r.eq, 2)} <small>€/t</small>`;
+  const margen = r2(r.eq - S.precioAlt);
+  $('#t-eq-s').textContent = margen === 0
+    ? 'El precio simulado está justo en el equilibrio.'
+    : margen > 0
+      ? `Con índice ${fmt(S.icAlt, 2)}, el pienso simulado puede subir ${fmt(margen, 2)} €/t más sin perder dinero.`
+      : `Con índice ${fmt(S.icAlt, 2)}, el pienso simulado está ${fmt(-margen, 2)} €/t por encima del equilibrio.`;
+
+  // Supuestos
+  const base = `${fmt(S.cerdos)} × ${fmtFlex(S.kg, 2)}`;
+  $('#sup-list').innerHTML = [
+    `<b>Mismos cerdos y mismos kilos ganados</b> en los dos escenarios: solo cambian el índice de conversión y el precio del pienso.`,
+    `<b>Toneladas</b> = cerdos × kg ganados por cerdo × índice ÷ 1.000. Actual: ${base} × ${fmt(S.ic, 2)} ÷ 1.000 = ${fmtFlex(r.tA, 1)} t. Simulado: ${base} × ${fmt(S.icAlt, 2)} ÷ 1.000 = ${fmtFlex(r.tS, 1)} t.`,
+    `<b>Coste</b> = toneladas × precio (€/t). <b>Resultado</b> = coste actual − coste simulado: positivo es ahorro, negativo es sobrecoste.`,
+    `<b>Precio de equilibrio</b> = precio actual × índice actual ÷ índice simulado: el precio del pienso simulado con el que los dos escenarios cuestan lo mismo.`,
+    `<b>Una carga</b> equivale a ${CARGA_T} t de pienso.`,
+    `Es una <b>estimación del coste de pienso</b> ${anio ? 'para un año' : 'para un lote'}: no incluye bajas, días de estancia, sanidad, transporte ni precio de venta.`
+  ].map(t => `<li>${t}</li>`).join('');
+
+  const dC = r2(r.cS - r.cA), cls = v => v < 0 ? 'good' : v > 0 ? 'bad' : '';
+  $('#cmp').innerHTML = `
+    <tr><th scope="row">Índice de conversión</th><td>${fmt(S.ic, 2)}</td><td>${fmt(S.icAlt, 2)}</td><td class="${cls(S.icAlt - S.ic)}">${signed(r2(S.icAlt - S.ic), 2)}</td></tr>
+    <tr><th scope="row">Precio del pienso (€/t)</th><td>${fmtFlex(S.precio, 2)}</td><td>${fmtFlex(S.precioAlt, 2)}</td><td class="${cls(S.precioAlt - S.precio)}">${signed(r2(S.precioAlt - S.precio), 2, true)}</td></tr>
+    <tr><th scope="row">Pienso (t)</th><td>${fmtFlex(r.tA, 1)}</td><td>${fmtFlex(r.tS, 1)}</td><td class="${cls(-r.dT)}">${signed(-r.dT, 1, true)}</td></tr>
+    <tr><th scope="row">Coste de pienso (€)</th><td>${fmt(r.cA)}</td><td>${fmt(r.cS)}</td><td class="${cls(dC)}">${signed(dC)}</td></tr>
+    <tr><th scope="row">Coste por cerdo (€)</th><td>${fmt(r.cA / S.cerdos, 2)}</td><td>${fmt(r.cS / S.cerdos, 2)}</td><td class="${cls(dC)}">${signed(dC / S.cerdos, 2)}</td></tr>`;
+
+  // Barra fija del móvil
+  $('#dock-l').textContent = `${word} estimado en pienso`;
+  $('#dock-v').textContent = txt;
+  $('#dock-s').textContent = `${fmt(Math.abs(r.porCerdo), 2)} €/cerdo · ${periodo}`;
+
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => {
+    $('#live').textContent = `${word} estimado en pienso: ${txt} ${periodo}. ${ncTxt} cargas de 30 toneladas ${r.dT >= 0 ? 'menos' : 'más'}. ${fmt(Math.abs(r.porCerdo), 2)} euros por cerdo. Precio de equilibrio: ${fmt(r.eq, 2)} euros por tonelada.`;
+  }, 700);
+
+  renderPay();
+}
+
+function onSimInput(k) {
+  const v = parseNum(inputOf(k).value, F[k].kind), e = check(v, F[k]);
+  setFieldErr(wrapOf(k), e);
+  if (e) { errs[k] = e; }
+  else {
+    delete errs[k]; S[k] = v;
+    if (k === 'ic' && S.linkIc) { S.icAlt = v; setInput('icAlt'); }
+    if (k === 'precio' && S.linkPrecio) { S.precioAlt = v; setInput('precioAlt'); }
+    if (k === 'icAlt') S.linkIc = false;
+    if (k === 'precioAlt') S.linkPrecio = false;
+  }
+  renderSim();
+}
+Object.keys(F).forEach(k => {
+  const el = inputOf(k);
+  el.addEventListener('input', () => onSimInput(k));
+  el.addEventListener('blur', () => { if (!errs[k]) el.value = F[k].fmt(S[k]); });
+  el.addEventListener('focus', () => { try { el.select(); } catch (_) {} });
+  el.addEventListener('keydown', ev => { if (ev.key === 'Enter') el.blur(); });
+});
+$$('input[name="modo"]').forEach(rb => rb.addEventListener('change', () => { S.mode = rb.value; renderSim({ dur: 0 }); }));
+
+$('#b-mejorar').addEventListener('click', () => {
+  if (errs.ic) return;
+  const base = errs.icAlt ? S.ic : S.icAlt;
+  const n = r2(base - 0.1);
+  if (!(n >= 0.1)) return;
+  S.icAlt = n; S.linkIc = false; setInput('icAlt');
+  renderSim({ dur: 1100, reveal: true });
+  if (MOBILE.matches) {
+    const rc = $('#hero').getBoundingClientRect();
+    if (rc.bottom > window.innerHeight || rc.top < 0) $('#acts').scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'start' });
+  }
+});
+function stepPrecio(d) {
+  const base = errs.precioAlt ? S.precio : S.precioAlt;
+  if (errs.precio && errs.precioAlt) return;
+  const n = r2(base + d);
+  if (n <= 0) return;
+  S.precioAlt = n; S.linkPrecio = false; setInput('precioAlt');
+  renderSim({ dur: 700 });
+}
+$('#b-pm').addEventListener('click', () => stepPrecio(-10));
+$('#b-pp').addEventListener('click', () => stepPrecio(10));
+$('#b-reset').addEventListener('click', () => {
+  if (errs.ic || errs.precio) return;
+  S.icAlt = S.ic; S.precioAlt = S.precio; S.linkIc = S.linkPrecio = true;
+  setInput('icAlt'); setInput('precioAlt');
+  renderSim({ dur: 500 });
+});
+$('#b-demo').addEventListener('click', () => {
+  Object.assign(S, DEMO);
+  $('#m-anio').checked = true;
+  setAllInputs(); renderSim({ dur: 500 });
+});
+$('#dock').addEventListener('click', () => $('#hero').scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'start' }));
+
+/* ───────── Gestión: datos ───────── */
+const KEY = 'decima.gestion.v1';
+const EJEMPLO = [
+  { nave: 'Nave A', lote: 'L-2601', entrados: 1250, bajas: 30, salidos: 1220, pesoEnt: 20, pesoSal: 110.5, entregado: 310, sobrante: 4.5, registrado: 304.8, precio: 318 },
+  { nave: 'Nave B', lote: 'L-2602', entrados: 1250, bajas: 41, salidos: 1209, pesoEnt: 20.5, pesoSal: 109, entregado: 318, sobrante: 5, registrado: 306, precio: 320 },
+  { nave: 'Nave C', lote: 'L-2603', entrados: 1100, bajas: 25, salidos: 1073, pesoEnt: 19.5, pesoSal: 111, entregado: 280, sobrante: 2.5, registrado: 277, precio: 322 },
+  { nave: 'Nave D', lote: 'L-2604', entrados: 1300, bajas: 52, salidos: 1248, pesoEnt: 20, pesoSal: 108, entregado: 336, sobrante: 3, registrado: 332.1, precio: 320 },
+  { nave: 'Nave A', lote: 'L-2605', entrados: 1250, bajas: 28, salidos: 1222, pesoEnt: 20.2, pesoSal: 111.2, entregado: 312, sobrante: 2, registrado: 309.5, precio: 325 },
+  { nave: 'Nave B', lote: 'L-2606', entrados: 1250, bajas: 35, salidos: 1215, pesoEnt: 20, pesoSal: 110, entregado: 320, sobrante: 5, registrado: 314.2, precio: 324 }
+];
+let uid = 0;
+const newId = () => 'l' + Date.now().toString(36) + (uid++).toString(36);
+const G = { lots: [], example: false, tolE: 5, tolS: 10, pay: { inv: 120000, gasto: 0, fuente: 'sim', manual: 50000, lotesAnio: 2.5 } };
+
+const GF = {
+  entrados:   { kind: 'big', int: true, req: true, gt0: true },
+  bajas:      { kind: 'big', int: true, def: 0 },
+  salidos:    { kind: 'big', int: true, req: true, gt0: true },
+  pesoEnt:    { kind: 'dec', req: true, gt0: true },
+  pesoSal:    { kind: 'dec', req: true, gt0: true },
+  entregado:  { kind: 'big', req: true, gt0: true },
+  sobrante:   { kind: 'big', def: 0 },
+  registrado: { kind: 'big', def: null, gt0: true },
+  precio:     { kind: 'big', req: true, gt0: true }
+};
+function buildLote(raw) {
+  const e = {}, l = { nave: String(raw.nave ?? '').trim().slice(0, 40), lote: String(raw.lote ?? '').trim().slice(0, 40) };
+  if (!l.nave) e.nave = 'Indica la nave.';
+  for (const k in GF) {
+    const c = GF[k], s = String(raw[k] ?? '').trim();
+    if (s === '') { if (c.req) e[k] = 'Dato obligatorio.'; else l[k] = c.def; continue; }
+    const v = parseNum(s, c.kind);
+    if (!Number.isFinite(v)) e[k] = 'Escribe un número.';
+    else if (c.int && !Number.isInteger(v)) e[k] = 'Debe ser un número entero.';
+    else if (c.gt0 && v <= 0) e[k] = 'Debe ser mayor que 0.';
+    else if (v < 0) e[k] = 'No puede ser negativo.';
+    else l[k] = v;
+  }
+  if (!Object.keys(e).length) {
+    if (l.pesoSal <= l.pesoEnt) e.pesoSal = 'Debe ser mayor que el peso de entrada.';
+    else if (l.salidos * l.pesoSal - l.entrados * l.pesoEnt <= 0) e.salidos = 'Con estos datos no hay kilos ganados.';
+    if (l.sobrante >= l.entregado) e.sobrante = 'Debe ser menor que el pienso entregado.';
+  }
+  return { l, e };
+}
+const TOL_PIENSO = 0.01;
+function calcLote(l) {
+  const ganancia = l.salidos * l.pesoSal - l.entrados * l.pesoEnt;   // kg
+  const consumo = l.entregado - l.sobrante;                           // t
+  const ic = consumo * 1000 / ganancia;
+  const dAnim = l.entrados - l.bajas - l.salidos;
+  const dPienso = l.registrado == null ? null : r3(consumo - l.registrado);
+  const pPienso = dPienso == null ? null : dPienso / consumo;
+  return {
+    ...l, ganancia, consumo, ic, dAnim, dPienso, pPienso,
+    okAnim: dAnim === 0,
+    okPienso: dPienso == null ? null : Math.abs(pPienso) <= TOL_PIENSO,
+    kgCerdo: ganancia / l.salidos, bajasPct: l.bajas / l.entrados * 100,
+    coste: consumo * l.precio, costeCerdo: consumo * l.precio / l.salidos, costeKg: consumo * l.precio / ganancia
+  };
+}
+function validSaved(l) {
+  return l && typeof l.nave === 'string' && l.nave &&
+    ['entrados', 'salidos', 'pesoEnt', 'pesoSal', 'entregado', 'precio'].every(k => Number.isFinite(l[k]) && l[k] > 0) &&
+    l.salidos * l.pesoSal - l.entrados * l.pesoEnt > 0 && Number.isFinite(l.sobrante ?? 0) && (l.sobrante ?? 0) < l.entregado;
+}
+function load() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) {}
+  if (d && Array.isArray(d.lots)) {
+    G.lots = d.lots.filter(validSaved).map(l => ({
+      id: newId(), nave: l.nave.slice(0, 40), lote: String(l.lote || '').slice(0, 40), entrados: l.entrados, bajas: Number.isFinite(l.bajas) ? l.bajas : 0,
+      salidos: l.salidos, pesoEnt: l.pesoEnt, pesoSal: l.pesoSal, entregado: l.entregado, sobrante: l.sobrante || 0,
+      registrado: Number.isFinite(l.registrado) ? l.registrado : null, precio: l.precio
+    }));
+    G.example = !!d.example && G.lots.length > 0;
+    if (Number.isFinite(d.tolE) && d.tolE >= 0) G.tolE = d.tolE;
+    if (Number.isFinite(d.tolS) && d.tolS >= 0) G.tolS = d.tolS;
+    if (d.pay && typeof d.pay === 'object') {
+      for (const k of ['inv', 'gasto', 'manual', 'lotesAnio']) if (Number.isFinite(d.pay[k]) && d.pay[k] >= 0) G.pay[k] = d.pay[k];
+      if (d.pay.fuente === 'manual') G.pay.fuente = 'manual';
+    }
+  } else {
+    G.lots = EJEMPLO.map(l => ({ id: newId(), ...l }));
+    G.example = true;
+  }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch (_) {} }
+function addLots(list) {
+  if (G.example) { G.lots = []; G.example = false; }
+  list.forEach((l, i) => {
+    if (!l.lote) l.lote = 'L-' + (G.lots.length + 1);
+    G.lots.push({ id: newId(), ...l });
+  });
+  save(); renderGes();
+}
+
+/* ───────── Gestión: lotes cerrados ───────── */
+function pillAnim(c) {
+  if (c.okAnim) return '<span class="pill ok">Animales cuadran</span>';
+  return c.dAnim > 0
+    ? `<span class="pill bad">Faltan ${fmt(c.dAnim)} ${c.dAnim === 1 ? 'animal' : 'animales'}</span>`
+    : `<span class="pill bad">Sobran ${fmt(-c.dAnim)} ${c.dAnim === -1 ? 'animal' : 'animales'}</span>`;
+}
+function pillPienso(c) {
+  if (c.okPienso == null) return '<span class="pill na">Pienso sin registro</span>';
+  if (c.okPienso) return '<span class="pill ok">Pienso cuadra</span>';
+  return `<span class="pill bad">Pienso: ${signed(c.dPienso, 1, true)} t (${fmt(Math.abs(c.pPienso) * 100, 1)} %)</span>`;
+}
+function renderLots() {
+  const cs = G.lots.map(calcLote);
+  $('#lotes-h').textContent = `Lotes cerrados (${cs.length})`;
+  $('#ej-banner').hidden = !G.example;
+  $('#b-export').disabled = $('#b-clear').disabled = !cs.length;
+  $('#lotes').innerHTML = cs.length ? cs.map(c => `
+    <article class="lote">
+      <header>
+        <h3>${esc(c.nave)} <span>· ${esc(c.lote || 's/n')}</span></h3>
+        <div class="ic num">${fmt(c.ic, 2)}<small>índice</small></div>
+      </header>
+      <div class="pills">${pillAnim(c)}${pillPienso(c)}</div>
+      <dl class="kv">
+        <div><dt>Kg ganados por cerdo</dt><dd class="num">${fmt(c.kgCerdo, 1)} kg</dd></div>
+        <div><dt>Bajas</dt><dd class="num">${fmt(c.bajasPct, 1)} %</dd></div>
+        <div><dt>Pienso consumido</dt><dd class="num">${fmtFlex(c.consumo, 1)} t</dd></div>
+        <div><dt>Pienso por cerdo</dt><dd class="num">${fmt(c.costeCerdo, 2)} €</dd></div>
+        <div><dt>Coste de pienso</dt><dd class="num">${fmt(c.coste)} €</dd></div>
+        <div><dt>Pienso por kg ganado</dt><dd class="num">${fmt(c.costeKg, 3)} €</dd></div>
+      </dl>
+      <div class="row">
+        <button type="button" class="btn sm" data-act="sim" data-id="${c.id}" aria-label="Llevar al simulador el lote ${esc(c.lote)} de ${esc(c.nave)}">Llevar al simulador</button>
+        <button type="button" class="btn sm danger" data-act="del" data-id="${c.id}" aria-label="Eliminar el lote ${esc(c.lote)} de ${esc(c.nave)}">Eliminar</button>
+      </div>
+    </article>`).join('') : '<p class="empty" style="grid-column:1/-1">Aún no hay lotes cerrados. Guarda un cierre manual o importa un CSV.</p>';
+}
+$('#lotes').addEventListener('click', ev => {
+  const b = ev.target.closest('button[data-act]'); if (!b) return;
+  const l = G.lots.find(x => x.id === b.dataset.id); if (!l) return;
+  if (b.dataset.act === 'del') {
+    G.lots = G.lots.filter(x => x !== l);
+    if (!G.lots.length) G.example = false;
+    save(); renderGes();
+  } else {
+    const c = calcLote(l);
+    Object.assign(S, { mode: 'lote', cerdos: l.salidos, kg: r2(c.kgCerdo), ic: r2(c.ic), precio: l.precio, icAlt: r2(c.ic), precioAlt: l.precio, linkIc: true, linkPrecio: true });
+    $('#m-lote').checked = true;
+    setAllInputs(); renderSim({ dur: 0 }); showTab('sim');
+    window.scrollTo(0, 0);
+  }
+});
+let clearArmed = 0;
+$('#b-clear').addEventListener('click', ev => {
+  const b = ev.currentTarget;
+  if (!clearArmed) {
+    b.textContent = '¿Vaciar todo? Pulsa otra vez';
+    clearArmed = setTimeout(() => { clearArmed = 0; b.textContent = 'Vaciar'; }, 4000);
+    return;
+  }
+  clearTimeout(clearArmed); clearArmed = 0; b.textContent = 'Vaciar';
+  G.lots = []; G.example = false; save(); renderGes();
+});
+
+/* ───────── Gestión: conciliación ───────── */
+function renderConc() {
+  const cs = G.lots.map(calcLote);
+  $('#conc-wrap').hidden = !cs.length;
+  if (!cs.length) { $('#conc-sums').innerHTML = '<p class="empty">Sin lotes que conciliar.</p>'; $('#conc-body').innerHTML = ''; return; }
+  const sum = (a, f) => a.reduce((t, x) => t + f(x), 0);
+  const ent = sum(cs, c => c.entrados), baj = sum(cs, c => c.bajas), sal = sum(cs, c => c.salidos), dA = ent - baj - sal;
+  const nAnim = cs.filter(c => !c.okAnim).length;
+  const reg = cs.filter(c => c.registrado != null), sinReg = cs.length - reg.length;
+  const pe = sum(reg, c => c.entregado), ps = sum(reg, c => c.sobrante), pr = sum(reg, c => c.registrado), dP = r3(pe - ps - pr);
+  const valor = sum(reg, c => c.dPienso * c.precio), nPienso = reg.filter(c => !c.okPienso).length;
+  $('#conc-sums').innerHTML = `
+    <div class="sum">
+      <h3>Animales ${nAnim ? `<span class="pill bad">${nAnim} ${nAnim === 1 ? 'lote descuadrado' : 'lotes descuadrados'}</span>` : '<span class="pill ok">Todo cuadra</span>'}</h3>
+      <dl class="eq num">
+        <dt>Entrados</dt><dd>${fmt(ent)}</dd>
+        <dt>− Bajas</dt><dd>${fmt(baj)}</dd>
+        <dt>− Salidos</dt><dd>${fmt(sal)}</dd>
+        <dt class="tot">Sin justificar</dt><dd class="tot">${fmt(dA)}</dd>
+      </dl>
+    </div>
+    <div class="sum">
+      <h3>Pienso ${!reg.length ? '<span class="pill na">Sin consumo registrado</span>' : nPienso ? `<span class="pill bad">${nPienso} ${nPienso === 1 ? 'lote descuadrado' : 'lotes descuadrados'}</span>` : '<span class="pill ok">Todo cuadra</span>'}</h3>
+      ${reg.length ? `<dl class="eq num">
+        <dt>Entregado</dt><dd>${fmtFlex(pe, 1)} t</dd>
+        <dt>− Sobrante</dt><dd>${fmtFlex(ps, 1)} t</dd>
+        <dt>− Consumo registrado</dt><dd>${fmtFlex(pr, 1)} t</dd>
+        <dt class="tot">Descuadre</dt><dd class="tot">${signed(dP, 1, true)} t · ${signed(Math.round(valor))} €</dd>
+      </dl>` : '<p class="note">Añade el consumo registrado en granja para conciliar el pienso.</p>'}
+      ${sinReg && reg.length ? `<p class="note" style="margin-top:6px">${sinReg} ${sinReg === 1 ? 'lote' : 'lotes'} sin consumo registrado, fuera de esta suma.</p>` : ''}
+    </div>`;
+  $('#conc-body').innerHTML = cs.map(c => `
+    <tr>
+      <th scope="row">${esc(c.nave)} · ${esc(c.lote || 's/n')}</th>
+      <td>${fmt(c.entrados)}</td><td>${fmt(c.bajas)}</td><td>${fmt(c.salidos)}</td>
+      <td class="${c.okAnim ? 'good' : 'bad'}">${c.okAnim ? '0 · cuadra' : fmt(c.dAnim)}</td>
+      <td>${fmtFlex(c.entregado, 1)}</td><td>${fmtFlex(c.sobrante, 1)}</td><td>${c.registrado == null ? '—' : fmtFlex(c.registrado, 1)}</td>
+      <td class="${c.okPienso == null ? '' : c.okPienso ? 'good' : 'bad'}">${c.dPienso == null ? 'sin dato' : `${signed(c.dPienso, 1, true)} (${fmt(Math.abs(c.pPienso) * 100, 1)} %)`}</td>
+      <td>${c.dPienso == null ? '—' : signed(Math.round(c.dPienso * c.precio)) + ' €'}</td>
+    </tr>`).join('');
+}
+
+/* ───────── Gestión: ranking ───────── */
+function ranking() {
+  const cs = G.lots.map(calcLote), key = s => s.trim().toLowerCase();
+  const naves = new Map();
+  for (const c of cs) {
+    const comps = cs.filter(o => key(o.nave) !== key(c.nave) && Math.abs(o.pesoEnt - c.pesoEnt) <= G.tolE + 1e-9 && Math.abs(o.pesoSal - c.pesoSal) <= G.tolS + 1e-9);
+    const k = key(c.nave);
+    if (!naves.has(k)) naves.set(k, { nave: c.nave, lots: 0, comp: 0, sobre: 0, consumo: 0, gan: 0, refCons: 0, salidos: 0 });
+    const n = naves.get(k); n.lots++;
+    if (!comps.length) continue;
+    const icRef = comps.reduce((t, o) => t + o.consumo, 0) * 1000 / comps.reduce((t, o) => t + o.ganancia, 0);
+    n.comp++; n.sobre += (c.ic - icRef) * c.ganancia / 1000 * c.precio;
+    n.consumo += c.consumo; n.gan += c.ganancia; n.refCons += icRef * c.ganancia / 1000; n.salidos += c.salidos;
+  }
+  return [...naves.values()].map(n => ({ ...n, ic: n.gan ? n.consumo * 1000 / n.gan : NaN, icRef: n.gan ? n.refCons * 1000 / n.gan : NaN }))
+    .sort((a, b) => (b.comp > 0) - (a.comp > 0) || b.sobre - a.sobre);
+}
+function renderRank() {
+  const box = $('#rank-box'), rk = ranking(), con = rk.filter(n => n.comp);
+  if (rk.length < 2) { box.innerHTML = '<p class="empty">Hacen falta lotes cerrados de al menos dos naves para comparar.</p>'; return; }
+  if (!con.length) { box.innerHTML = '<p class="empty">Ningún lote tiene comparables con estas tolerancias de peso. Amplía los márgenes.</p>'; return; }
+  const max = Math.max(...con.map(n => Math.abs(n.sobre)), 1);
+  const total = con.reduce((t, n) => t + Math.max(0, n.sobre), 0);
+  let pos = 0;
+  box.innerHTML = `
+    <div class="total"><span>Sobrecoste total de las naves por encima de sus comparables</span><strong class="num">${eur(Math.round(total))}</strong></div>
+    <ol class="rank">${rk.map(n => {
+      if (!n.comp) return `<li class="is-na"><div class="rk-h"><span class="rk-n" aria-hidden="true">–</span><strong>${esc(n.nave)}</strong><span class="rk-v">Sin comparables</span></div><p class="rk-s">${n.lots} ${n.lots === 1 ? 'lote' : 'lotes'} sin otros de peso similar en otras naves.</p></li>`;
+      pos++;
+      const bad = n.sobre > 0.5, good = n.sobre < -0.5;
+      return `<li class="${bad ? 'is-bad' : good ? 'is-good' : 'is-na'}">
+        <div class="rk-h"><span class="rk-n" aria-hidden="true">${pos}</span><strong>${esc(n.nave)}</strong>
+          <span class="rk-v num">${bad ? 'Sobrecoste ' : good ? 'Ahorro ' : ''}${eur(Math.abs(Math.round(n.sobre)))}</span></div>
+        <div class="bar" aria-hidden="true"><span style="width:${(Math.abs(n.sobre) / max * 100).toFixed(1)}%"></span></div>
+        <p class="rk-s num">Índice ${fmt(n.ic, 2)} frente a ${fmt(n.icRef, 2)} de sus comparables · ${fmt(Math.abs(n.sobre) / n.salidos, 2)} € por cerdo · ${n.comp} ${n.comp === 1 ? 'lote' : 'lotes'}${n.comp < n.lots ? ` (${n.lots - n.comp} sin comparables)` : ''}</p>
+      </li>`;
+    }).join('')}</ol>`;
+}
+[['tolE', '#r-tolE'], ['tolS', '#r-tolS']].forEach(([k, sel]) => {
+  const el = $(sel), wrap = el.closest('.field');
+  el.value = fmtFlex(G[k], 1);
+  el.addEventListener('input', () => {
+    const v = parseNum(el.value, 'dec');
+    if (!Number.isFinite(v) || v < 0) { setFieldErr(wrap, 'Escribe un número igual o mayor que 0.'); return; }
+    setFieldErr(wrap, ''); G[k] = v; save(); renderRank();
+  });
+  el.addEventListener('blur', () => { if (!wrap.classList.contains('bad')) el.value = fmtFlex(G[k], 1); });
+});
+
+/* ───────── Gestión: plazo de recuperación ───────── */
+const PF = { inv: { gt0: true }, gasto: {}, manual: { gt0: true }, lotesAnio: { gt0: true, dec: true } };
+const payErr = {};
+function plazoTxt(y) {
+  if (y > 50) return 'Más de 50 años';
+  const m = Math.max(1, Math.ceil(y * 12 - 1e-9)), a = Math.floor(m / 12), mm = m % 12;
+  const pa = a ? `${a} ${a === 1 ? 'año' : 'años'}` : '', pm = mm ? `${mm} ${mm === 1 ? 'mes' : 'meses'}` : '';
+  return pa && pm ? `${pa} y ${pm}` : pa || pm;
+}
+function renderPay() {
+  const out = $('#pay-out'); if (!out) return;
+  const p = G.pay, sim = p.fuente === 'sim', lote = S.mode === 'lote';
+  $('#pw-manual').hidden = sim;
+  $('#pw-lotes').hidden = !(sim && lote);
+  const bad = k => payErr[k];
+  if (bad('inv') || bad('gasto') || (!sim && bad('manual')) || (sim && lote && bad('lotesAnio'))) {
+    out.innerHTML = '<p class="l">Plazo de recuperación</p><p class="v bad">Revisa los datos marcados</p>'; return;
+  }
+  let bruto, origen;
+  if (sim) {
+    if (!simRes) { out.innerHTML = '<p class="l">Plazo de recuperación</p><p class="v bad">El simulador tiene datos sin corregir</p>'; return; }
+    bruto = simRes.ahorro * (lote ? p.lotesAnio : 1);
+    origen = lote ? `Simulador: ${eur(Math.round(simRes.ahorro))} por lote × ${fmtFlex(p.lotesAnio, 2)} lotes al año` : `Simulador: ${eur(Math.round(simRes.ahorro))} al año`;
+  } else { bruto = p.manual; origen = 'Ahorro anual introducido a mano'; }
+  const neto = bruto - p.gasto;
+  if (!(neto > 0)) {
+    out.innerHTML = `<p class="l">Plazo de recuperación</p><p class="v bad">No se recupera</p>
+      <p class="note">${sim && simRes && simRes.ahorro === 0 ? 'El simulador aún no muestra ahorro: pulsa «Mejorar 0,10» en la pestaña Simulador.' : `El ahorro neto anual es ${eur(Math.round(neto))}.`} ${esc(origen)}.</p>`;
+    return;
+  }
+  const y = p.inv / neto, H = Math.min(15, Math.max(5, Math.ceil(y))), pct = Math.min(100, y / H * 100), bal = 5 * neto - p.inv;
+  out.innerHTML = `
+    <p class="l">Plazo de recuperación</p>
+    <p class="v num">${plazoTxt(y)}</p>
+    <p class="note">${esc(origen)}${p.gasto ? ` − ${eur(Math.round(p.gasto))} de gasto anual` : ''}.</p>
+    <div class="track" aria-hidden="true"><span style="width:${pct.toFixed(1)}%"></span><i style="width:${(100 - pct).toFixed(1)}%"></i></div>
+    <div class="ticks num" aria-hidden="true">${Array.from({ length: H + 1 }, (_, i) => `<span>${i}</span>`).join('')}</div>
+    <div class="legend"><span><b style="background:var(--bad)"></b>Recuperando la inversión</span><span><b style="background:var(--good)"></b>Ahorro neto (años)</span></div>
+    <dl class="kv" style="margin-top:14px">
+      <div><dt>Ahorro neto anual</dt><dd class="num">${eur(Math.round(neto))}</dd></div>
+      <div><dt>Retorno anual sobre la inversión</dt><dd class="num">${fmt(neto / p.inv * 100, 1)} %</dd></div>
+      <div><dt>Balance a 5 años</dt><dd class="num">${signed(Math.round(bal))} €</dd></div>
+      <div><dt>Plazo exacto</dt><dd class="num">${fmt(y, 2)} años</dd></div>
+    </dl>
+    <p class="note" style="margin-top:10px">Plazo simple: inversión ÷ ahorro neto anual, sin actualización financiera.</p>`;
+}
+Object.keys(PF).forEach(k => {
+  const el = $('#p-' + k), wrap = el.closest('.field'), c = PF[k];
+  const show = () => { el.value = c.dec ? fmtFlex(G.pay[k], 2) : fmtFlex(G.pay[k], 2); };
+  show();
+  el.addEventListener('input', () => {
+    const v = parseNum(el.value, c.dec ? 'dec' : 'big');
+    const e = !Number.isFinite(v) ? 'Escribe un número.' : c.gt0 && v <= 0 ? 'Debe ser mayor que 0.' : v < 0 ? 'No puede ser negativo.' : '';
+    setFieldErr(wrap, e);
+    if (e) payErr[k] = e; else { delete payErr[k]; G.pay[k] = v; save(); }
+    renderPay();
+  });
+  el.addEventListener('blur', () => { if (!payErr[k]) show(); });
+});
+$$('input[name="fuente"]').forEach(rb => rb.addEventListener('change', () => { G.pay.fuente = rb.value; save(); renderPay(); }));
+
+/* ───────── Gestión: formulario manual ───────── */
+const form = $('#f-lote');
+const gWrap = k => $(`.field[data-g="${k}"]`, form);
+const formRaw = () => Object.fromEntries(['nave', 'lote', ...Object.keys(GF)].map(k => [k, $('#g-' + k).value]));
+function renderPreview() {
+  const { l, e } = buildLote(formRaw()), prev = $('#g-prev');
+  if (Object.keys(e).length) { prev.textContent = 'Rellena el lote para ver su índice de conversión y si cuadran animales y pienso.'; return; }
+  const c = calcLote(l);
+  prev.innerHTML = `Índice <b class="num">${fmt(c.ic, 2)}</b> · <b class="num">${fmt(c.kgCerdo, 1)} kg</b> ganados por cerdo · bajas <b class="num">${fmt(c.bajasPct, 1)} %</b> · pienso <b class="num">${fmt(c.costeCerdo, 2)} €</b> por cerdo<span class="pills" style="margin-top:8px">${pillAnim(c)}${pillPienso(c)}</span>`;
+}
+form.addEventListener('input', ev => {
+  const w = ev.target.closest('.field'); if (w) setFieldErr(w, '');
+  $('#g-msg').textContent = ''; renderPreview();
+});
+form.addEventListener('submit', ev => {
+  ev.preventDefault();
+  const { l, e } = buildLote(formRaw()), msg = $('#g-msg');
+  ['nave', 'lote', ...Object.keys(GF)].forEach(k => setFieldErr(gWrap(k), e[k] || ''));
+  const bad = Object.keys(e);
+  if (bad.length) {
+    msg.className = 'msg bad'; msg.textContent = 'Revisa los campos marcados.';
+    $('#g-' + bad[0]).focus(); return;
+  }
+  const eraEjemplo = G.example;
+  addLots([l]);
+  form.reset(); renderPreview();
+  msg.className = 'msg ok';
+  msg.textContent = `Cierre guardado: ${l.nave}${l.lote ? ' · ' + l.lote : ''}.${eraEjemplo ? ' Se han retirado los lotes de ejemplo.' : ''}`;
+});
+form.addEventListener('reset', () => {
+  setTimeout(() => { ['nave', 'lote', ...Object.keys(GF)].forEach(k => setFieldErr(gWrap(k), '')); $('#g-msg').textContent = ''; renderPreview(); }, 0);
+});
+$$('input[name="via"]').forEach(rb => rb.addEventListener('change', () => {
+  form.hidden = rb.value !== 'man'; $('#csv-box').hidden = rb.value !== 'csv';
+}));
+
+/* ───────── Gestión: CSV ───────── */
+const CSV_HEAD = 'nave;lote;entrados;bajas;salidos;peso_entrada_kg;peso_salida_kg;pienso_entregado_t;pienso_sobrante_t;pienso_registrado_t;precio_eur_t';
+const CSV_KEYS = ['nave', 'lote', 'entrados', 'bajas', 'salidos', 'pesoEnt', 'pesoSal', 'entregado', 'sobrante', 'registrado', 'precio'];
+const COLS = {
+  nave: ['nave', 'granja', 'navegranja'], lote: ['lote', 'idlote', 'id', 'codigo', 'codigolote'],
+  entrados: ['entrados', 'animalesentrados', 'cerdosentrados', 'entradas'], bajas: ['bajas', 'muertos', 'mortalidad'],
+  salidos: ['salidos', 'animalessalidos', 'cerdossalidos', 'vendidos', 'salidas'],
+  pesoEnt: ['pesoentradakg', 'pesoentrada', 'pesomedioentrada', 'pesomedioentradakg'],
+  pesoSal: ['pesosalidakg', 'pesosalida', 'pesomediosalida', 'pesomediosalidakg'],
+  entregado: ['piensoentregadot', 'piensoentregado', 'entregadot', 'entregado'],
+  sobrante: ['piensosobrantet', 'piensosobrante', 'sobrantet', 'sobrante', 'stockfinalt', 'stockfinal'],
+  registrado: ['piensoregistradot', 'piensoregistrado', 'consumoregistradot', 'consumoregistrado', 'registradot', 'registrado'],
+  precio: ['precioeurt', 'preciot', 'precio', 'preciopienso', 'preciopiensoeurt', 'preciopiensot']
+};
+const LABEL = { nave: 'nave', lote: 'lote', entrados: 'entrados', bajas: 'bajas', salidos: 'salidos', pesoEnt: 'peso de entrada', pesoSal: 'peso de salida', entregado: 'pienso entregado', sobrante: 'pienso sobrante', registrado: 'consumo registrado', precio: 'precio' };
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+function splitCSV(line, sep) {
+  const out = []; let cur = '', q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (q) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep) { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out.map(s => s.trim());
+}
+function importCSV(text) {
+  const lines = text.replace(/^﻿/, '').split(/\r\n|\n|\r/).map((t, i) => ({ t, n: i + 1 })).filter(x => x.t.trim() !== '');
+  if (lines.length < 2) return { ok: false, text: 'El CSV necesita una línea de cabecera y al menos un lote.' };
+  const h = lines[0].t, count = ch => h.split(ch).length - 1;
+  const sep = [';', '\t', ','].reduce((best, ch) => count(ch) > count(best) ? ch : best, ';');
+  const head = splitCSV(h, sep).map(norm), idx = {};
+  for (const k in COLS) idx[k] = head.findIndex(x => COLS[k].includes(x));
+  const falta = ['nave', 'entrados', 'salidos', 'pesoEnt', 'pesoSal', 'entregado', 'precio'].filter(k => idx[k] < 0);
+  if (falta.length) return { ok: false, text: 'Faltan columnas en la cabecera: ' + falta.map(k => LABEL[k]).join(', ') + '.' };
+  const good = [], bad = [];
+  for (const ln of lines.slice(1)) {
+    const cells = splitCSV(ln.t, sep), raw = {};
+    for (const k in idx) raw[k] = idx[k] >= 0 ? (cells[idx[k]] ?? '') : '';
+    const { l, e } = buildLote(raw), ks = Object.keys(e);
+    if (ks.length) bad.push(`Línea ${ln.n}: ${ks.map(k => `${LABEL[k]} (${e[k].replace(/\.$/, '').toLowerCase()})`).join('; ')}.`);
+    else good.push(l);
+  }
+  if (!good.length) return { ok: false, text: 'No se ha importado ningún lote.\n' + bad.slice(0, 6).join('\n') };
+  const eraEjemplo = G.example;
+  addLots(good);
+  let t = `${good.length} ${good.length === 1 ? 'lote importado' : 'lotes importados'}.` + (eraEjemplo ? ' Se han retirado los lotes de ejemplo.' : '');
+  if (bad.length) t += `\n${bad.length} ${bad.length === 1 ? 'línea descartada' : 'líneas descartadas'}:\n` + bad.slice(0, 6).join('\n') + (bad.length > 6 ? '\n…' : '');
+  return { ok: !bad.length, text: t };
+}
+function runImport(text) {
+  const m = $('#csv-msg'), r = importCSV(text);
+  m.className = 'msg ' + (r.ok ? 'ok' : 'bad'); m.textContent = r.text;
+  if (r.text.includes('importad')) $('#lotes-panel').scrollIntoView({ behavior: RM.matches ? 'auto' : 'smooth', block: 'start' });
+}
+$('#b-import').addEventListener('click', () => runImport($('#csv-text').value));
+$('#csv-file').addEventListener('change', ev => {
+  const f = ev.target.files && ev.target.files[0]; if (!f) return;
+  const read = enc => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = rej; fr.readAsText(f, enc); });
+  read('utf-8').then(t => t.includes('�') ? read('windows-1252') : t).then(t => { $('#csv-text').value = t; runImport(t); })
+    .catch(() => { const m = $('#csv-msg'); m.className = 'msg bad'; m.textContent = 'No se ha podido leer el archivo.'; });
+  ev.target.value = '';
+});
+function download(name, text) {
+  const url = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+const csvNum = v => v == null ? '' : String(v).replace('.', ',');
+const csvTxt = s => /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+const toCSV = lots => [CSV_HEAD, ...lots.map(l => CSV_KEYS.map(k => (k === 'nave' || k === 'lote') ? csvTxt(l[k] || '') : csvNum(l[k])).join(';'))].join('\r\n') + '\r\n';
+$('#b-tpl').addEventListener('click', () => download('plantilla-cierre-lotes.csv', toCSV(EJEMPLO.slice(0, 2))));
+$('#b-export').addEventListener('click', () => download('cierres-de-lote.csv', toCSV(G.lots)));
+
+function renderGes() { renderLots(); renderConc(); renderRank(); renderPay(); }
+
+/* ───────── Pestañas, tema, proyección ───────── */
+const tabs = { sim: $('#t-sim'), ges: $('#t-ges') }, panes = { sim: $('#p-sim'), ges: $('#p-ges') };
+let tab = 'sim', heroVisible = true;
+function updateDock() { $('#dock').hidden = !(tab === 'sim' && !heroVisible); }
+function showTab(t) {
+  tab = t;
+  for (const k in tabs) {
+    const on = k === t;
+    tabs[k].setAttribute('aria-selected', on); tabs[k].tabIndex = on ? 0 : -1; panes[k].hidden = !on;
+  }
+  updateDock();
+}
+for (const k in tabs) {
+  tabs[k].addEventListener('click', () => { showTab(k); window.scrollTo(0, 0); });
+  tabs[k].addEventListener('keydown', ev => {
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    const o = k === 'sim' ? 'ges' : 'sim'; showTab(o); tabs[o].focus();
+  });
+}
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => { heroVisible = es[0].isIntersecting; updateDock(); }, { threshold: 0.3 }).observe($('#hero'));
+}
+const topEl = $('.top'), setTopH = () => document.documentElement.style.setProperty('--top-h', topEl.offsetHeight + 'px');
+setTopH();
+if ('ResizeObserver' in window) new ResizeObserver(setTopH).observe(topEl); else window.addEventListener('resize', setTopH);
+
+const root = document.documentElement;
+try { const t = localStorage.getItem('decima.tema'); if (t === 'light' || t === 'dark') root.dataset.theme = t; } catch (_) {}
+$('#b-theme').addEventListener('click', () => {
+  const dark = root.dataset.theme ? root.dataset.theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  root.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('decima.tema', root.dataset.theme); } catch (_) {}
+});
+$('#b-proj').addEventListener('click', ev => {
+  const on = !root.classList.contains('proj');
+  root.classList.toggle('proj', on); ev.currentTarget.setAttribute('aria-pressed', on);
+  try {
+    if (on && !document.fullscreenElement && root.requestFullscreen) root.requestFullscreen().catch(() => {});
+    else if (!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  } catch (_) {}
+});
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && root.classList.contains('proj')) { root.classList.remove('proj'); $('#b-proj').setAttribute('aria-pressed', 'false'); }
+});
+
+/* ───────── Arranque ───────── */
+load();
+if (G.pay.fuente === 'manual') $('#pf-man').checked = true;
+['inv', 'gasto', 'manual', 'lotesAnio'].forEach(k => { $('#p-' + k).value = fmtFlex(G.pay[k], 2); });
+$('#r-tolE').value = fmtFlex(G.tolE, 1); $('#r-tolS').value = fmtFlex(G.tolS, 1);
+setAllInputs();
+renderSim({ dur: 0 });
+renderGes();
+})();
+</script>
+</body>
+</html>
